@@ -1,35 +1,33 @@
-const express = require('express');
-const router = express.Router();
+const { DataTypes } = require('sequelize');
+const sequelize = require('../database');
 
-router.get('/',(req, res, next) => {
-    res.status(200).json({
-        message: 'Orders were fetched'
-    });
+const Customer = sequelize.define('Customer', {
+  name: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  email: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    unique: true,
+  },
 });
 
-router.post('/',(req, res, next) => {
-    const order = {
-        productId: req.body.productId,
-        quantity: req.body.quantity
-    };
-    res.status(201).json({
-        message: 'Order was created',
-        order: order
-    });
+const Order = sequelize.define('Order', {
+  date: {
+    type: DataTypes.DATEONLY,
+    allowNull: false,
+  },
+  total: {
+    type: DataTypes.DECIMAL(10, 2),
+    allowNull: false,
+  },
 });
 
-router.get('/:orderId',(req, res, next) => {
-    res.status(200).json({
-        message: 'Order details',
-        orderId: req.params.orderId
-    });
-});
+Customer.hasMany(Order, { onDelete: 'CASCADE' });
+Order.belongsTo(Customer);
 
-router.delete('/:orderId',(req, res, next) => {
-    res.status(200).json({
-        message: 'Order deleted',
-        orderId: req.params.orderId
-    });
-});
-
-module.exports = router;
+module.exports = {
+  Customer,
+  Order,
+};
