@@ -1,57 +1,46 @@
-const express = require('express');
-const router = express.Router();
-const mongoose = require('mongoose');
+const customers = [
+  { id: 1, name: 'Alice', email: 'alice@example.com' },
+  { id: 2, name: 'Bob', email: 'bob@example.com' },
+  { id: 3, name: 'Charlie', email: 'charlie@example.com' }
+];
 
-const Product = require('../models/product');
+const orders = [
+  { id: 1, customerId: 1, date: '2022-01-01', total: 100.00 },
+  { id: 2, customerId: 1, date: '2022-02-01', total: 200.00 },
+  { id: 3, customerId: 2, date: '2022-03-01', total: 150.00 }
+];
 
-router.get('/',(req, res, next) => {
-    res.status(200).json({
-        message: 'Handling GET requests to /products'
-    });
+// Get all customers
+app.get('/customers', (req, res) => {
+  res.json(customers);
 });
 
-router.post('/',(req, res, next) => {
-    const product = new Product({
-        _id: new mongoose.Types.ObjectId(),
-        name: req.body.name,
-        price: req.body.price
-    });
-    product.save().then(result => {
-        console.log(result);
-    })
-    .catch(err => console.log(err));
-    res.status(201).json({
-        message: 'Handling POST requests to /products',
-        createdProduct: product
-    });
+// Get a single customer by ID
+app.get('/customers/:id', (req, res) => {
+  const id = parseInt(req.params.id);
+  const customer = customers.find(c => c.id === id);
+  if (customer) {
+    res.json(customer);
+  } else {
+    res.sendStatus(404);
+  }
 });
 
-router.get('/:productId',(req, res, next) =>{
-    const id = req.params.productId;
-    Product.findById(id)
-    .exec()
-    .then(doc => {
-        console.log(doc);
-        res.status(200).json(doc);
-    }) 
-    .catch(err => { 
-        console.log(err);
-        res.status(500).json({error: err});
-    
-    });
+// Get all orders for a given customer ID
+app.get('/customers/:customerId/orders', (req, res) => {
+  const customerId = parseInt(req.params.customerId);
+  const customerOrders = orders.filter(o => o.customerId === customerId);
+  res.json(customerOrders);
 });
 
-router.patch('/:productId',(req, res, next) =>{
-    res.status(200).json({
-        message:'Updated Product!'
-    });
+// Get a single order by ID for a given customer ID
+app.get('/customers/:customerId/orders/:orderId', (req, res) => {
+  const customerId = parseInt(req.params.customerId);
+  const orderId = parseInt(req.params.orderId);
+  const order = orders.find(o => o.customerId === customerId && o.id === orderId);
+  if (order) {
+    res.json(order);
+  } else {
+    res.sendStatus(404);
+  }
 });
-
-router.delete('/:productId',(req, res, next) =>{
-    res.status(200).json({
-        message:'Deleted Product!'
-    });
-});
-
-
-module.exports = router;
