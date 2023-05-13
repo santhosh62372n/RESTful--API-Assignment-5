@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Customer Orders</title>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+  <h1>Customer Orders</h1>
+
+  <h2>All Customers</h2>
+  <ul id="customers"></ul>
+
+  <h2>Customer Details</h2>
+  <form>
+    <label for="customerId">Customer ID:</label>
+    <input type="text" id="customerId">
+    <button type="button" id="getCustomer">Get Customer</button>
+  </form>
+  <div id="customerDetails"></div>
+
+  <h2>Customer Orders</h2>
+  <form>
+    <label for="customerOrdersId">Customer ID:</label>
+    <input type="text" id="customerOrdersId">
+    <button type="button" id="getCustomerOrders">Get Orders</button>
+  </form>
+  <ul id="customerOrders"></ul>
+
+  <h2>Order Details</h2>
+  <form>
+    <label for="orderId">Order ID:</label>
+    <input type="text" id="orderId">
+    <label for="orderCustomerId">Customer ID:</label>
+    <input type="text" id="orderCustomerId">
+    <button type="button" id="getOrder">Get Order</button>
+  </form>
+  <div id="orderDetails"></div>
+
+  <script>
+    $(document).ready(() => {
+      // Get all customers
+      $.getJSON('/customers', (data) => {
+        const customerList = $('#customers');
+        $.each(data, (index, customer) => {
+          customerList.append(`<li>${customer.name} (${customer.email})</li>`);
+        });
+      });
+
+      // Get a single customer by ID
+      $('#getCustomer').click(() => {
+        const customerId = $('#customerId').val();
+        $.getJSON(`/customers/${customerId}`, (data) => {
+          $('#customerDetails').html(`Name: ${data.name}<br>Email: ${data.email}`);
+        }).fail(() => {
+          $('#customerDetails').html('Customer not found');
+        });
+      });
+
+      // Get all orders for a given customer ID
+      $('#getCustomerOrders').click(() => {
+        const customerId = $('#customerOrdersId').val();
+        $.getJSON(`/customers/${customerId}/orders`, (data) => {
+          const orderList = $('#customerOrders');
+          orderList.empty();
+          $.each(data, (index, order) => {
+            orderList.append(`<li>${order.date} - $${order.total.toFixed(2)}</li>`);
+          });
+        }).fail(() => {
+          $('#customerOrders').html('Customer not found');
+        });
+      });
+
+      // Get a single order by ID for a given customer ID
+      $('#getOrder').click(() => {
+        const customerId = $('#orderCustomerId').val();
+        const orderId = $('#orderId').val();
+        $.getJSON(`/customers/${customerId}/orders/${orderId}`, (data) => {
+          $('#orderDetails').html(`Date: ${data.date}<br>Total: $${data.total.toFixed(2)}`);
+        }).fail(() => {
+          $('#orderDetails').html('Order not found');
+        });
+      });
+    });
+  </script>
+</body>
+</html>
